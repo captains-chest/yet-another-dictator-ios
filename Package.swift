@@ -11,12 +11,20 @@ let package = Package(
         .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "1.1.1")
     ],
     targets: [
+        // Typing into the host app's field through the keyboard's text document proxy. Depends only
+        // on DictationCore, so it's unit-tested anywhere (including Linux) with a fake proxy.
+        .target(
+            name: "KeyboardInsertion",
+            dependencies: [.product(name: "DictationCore", package: "DictationCore")]
+        ),
         .target(
             name: "DictatorIOS",
             dependencies: [
+                "KeyboardInsertion",
                 .product(name: "DictationCore", package: "DictationCore"),
                 .product(name: "WhisperKit", package: "WhisperKit")
             ]
-        )
+        ),
+        .testTarget(name: "KeyboardInsertionTests", dependencies: ["KeyboardInsertion"])
     ]
 )
