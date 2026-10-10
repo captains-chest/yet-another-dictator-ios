@@ -65,7 +65,7 @@ jobs:
             -skipPackagePluginValidation -skipMacroValidation \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID" \
-            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="Apple Distribution" CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
       - name: Export or upload
         env:
