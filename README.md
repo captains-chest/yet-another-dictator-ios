@@ -49,7 +49,7 @@ Early scaffolding: a SwiftPM package with `KeyboardTextInserter` (the `TextInser
 `UITextDocumentProxy`) and design notes. There is **no Xcode project yet**: no app target, no
 keyboard extension, no entitlements, no microphone capture, no bundled model, and only the inserter has tests.
 A keyboard extension can't record audio itself, so capture needs a decision (see
-`Sources/DictatorIOS/Notes.md`). CI (`.github/workflows/ci.yml`) runs the tests and builds the package for iOS.
+`docs/implementation-notes.md`). CI (`.github/workflows/ci.yml`) runs the tests and builds the package for iOS.
 
 ## Conventions
 
