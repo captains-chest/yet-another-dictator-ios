@@ -4,7 +4,8 @@ import PackageDescription
 let package = Package(
     name: "DictatorIOS",
     // iOS 18: DictationCore needs it (Synchronization.Mutex).
-    platforms: [.iOS(.v18)],
+    // macOS only so the platform-free targets can be unit-tested on a Mac host; the app is iOS-only.
+    platforms: [.iOS(.v18), .macOS(.v15)],
     // Every dependency is pinned exactly; Dependabot proposes bumps as PRs.
     dependencies: [
         .package(url: "https://github.com/captains-chest/DictationCore.git", exact: "0.1.0"),

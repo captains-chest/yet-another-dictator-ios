@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: xcode-27
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+      - name: Resolve dependencies
+        run: swift package resolve --force-resolved-versions
+      # The fake-proxy tests depend only on DictationCore, so they run on the macOS host.
+      - name: Test (KeyboardInsertion, macOS host)
+        run: swift test --filter KeyboardInsertionTests
+      - name: Build (iOS)
+        run: xcodebuild build -scheme DictatorIOS-Package -destination 'generic/platform=iOS' -skipPackagePluginValidation -skipMacroValidation CODE_SIGNING_ALLOWED=NO -quiet
