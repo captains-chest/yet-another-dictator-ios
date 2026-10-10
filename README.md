@@ -14,18 +14,59 @@ Fully offline dictation that works in any text field via a custom keyboard exten
 
 ## Architecture
 
+Recording and transcription run in the container app. The keyboard only shows the mic button and
+types. A keyboard extension cannot record audio, and it does not have the memory for a Whisper
+model (ADR 0001).
+
 ```
-Main app (SwiftUI)
-  └─ Settings, model management, permissions
-Keyboard Extension
-  └─ Mic button + standard keys
-  └─ Implements TextInserting via UITextDocumentProxy
-Shared
-  └─ DictationCore (state machine, transcript processing)
-  └─ WhisperKit adapter
+Container app
+  └─ AVAudioEngine → CaptureBuffer (16 kHz mono)
+  └─ WhisperKitTranscriber (bundled Whisper Small, download disabled)
+  └─ DictationController
+  └─ HandoffInserter writes the transcript into the App Group
+Keyboard extension
+  └─ Mic button: tap toggles, hold is push-to-talk
+  └─ SmartJoin using documentContextBeforeInput
+  └─ KeyboardTextInserter → UITextDocumentProxy.insertText
+Shared package
+  └─ DictatorIOS (re-exports the pieces both targets use; no WhisperKit)
+  └─ SessionMailbox (commands, one transcript, Darwin wake-up)
+  └─ WhisperTranscription (app only)
+  └─ DictationCore
 ```
 
-Text insertion uses the keyboard's `textDocumentProxy`. Recording/transcription may be bridged to the main app via App Group if the extension memory limit is tight.
+The shared container holds the latest transcript and a session id. The keyboard deletes it as soon
+as it has typed. No audio and no history are written. The first session is started in the app
+("Keep dictation available"): the microphone stays open so iOS doesn't suspend the process, and the
+microphone indicator stays visible until the session is turned off.
+
+## Build
+
+Requires iOS 18+, Xcode 26 / Swift 6.2.
+
+```sh
+scripts/fetch-model.sh          # once; verifies Whisper Small into ./Model (gitignored)
+open DictatorIOS.xcodeproj
+```
+
+The app copies `Model/` into its bundle when that folder exists. Without it, the app still builds
+and refuses to transcribe. `Model/` is not downloaded by WhisperKit.
+
+```sh
+swift test                      # hand-off, insertion, and "model folder is complete" checks
+```
+
+## Entitlements
+
+Each one is required for the hand-off in ADR 0001, and none of them grant network access.
+
+- **App Group** `group.com.captainduckay.dictator.ios` on the app and the keyboard: the in-flight
+  transcript. Deleted once typed.
+- **Full Access** (`RequestsOpenAccess`): the keyboard can read that container. The extension has
+  no network code.
+- **Microphone usage description:** the app records only while a dictation is running.
+- **Audio background mode:** the armed session stays awake so the keyboard can start a recording
+  while another app is in front. The microphone indicator is visible the whole time.
 
 ## Requirements
 
@@ -45,11 +86,12 @@ These are requirements for every change:
 
 ## Status
 
-Early scaffolding: a SwiftPM package with `KeyboardTextInserter` (the `TextInserting` port on
-`UITextDocumentProxy`) and design notes. There is **no Xcode project yet**: no app target, no
-keyboard extension, no entitlements, no microphone capture, no bundled model, and only the inserter has tests.
-A keyboard extension can't record audio itself, so capture needs a decision (see
-`docs/implementation-notes.md`). CI (`.github/workflows/ci.yml`) runs the tests and builds the package for iOS.
+The container app, the keyboard extension, and the App Group hand-off are in place. The model is
+pinned in `scripts/model-manifest.txt` and bundled by `scripts/fetch-model.sh`; it is not committed.
+CI (`.github/workflows/ci.yml`) runs `swift test` and builds the iOS app. How the two processes are
+wired is in `docs/implementation-notes.md`. Peak memory, latency, and Danish/English quality on the
+oldest supported iPhone are still to be measured before considering a larger model (ADR 0003). How
+long an armed session survives in the background needs the same on-device pass (ADR 0001).
 
 ## Conventions
 
