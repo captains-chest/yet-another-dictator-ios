@@ -3,9 +3,11 @@ import PackageDescription
 
 let package = Package(
     name: "DictatorIOS",
-    platforms: [.iOS(.v17)],
+    // iOS 18: DictationCore needs it (Synchronization.Mutex).
+    platforms: [.iOS(.v18)],
+    // Every dependency is pinned exactly; Dependabot proposes bumps as PRs.
     dependencies: [
-        .package(url: "https://github.com/captains-chest/DictationCore.git", branch: "main"),
+        .package(url: "https://github.com/captains-chest/DictationCore.git", exact: "0.1.0"),
         .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "1.1.1")
     ],
     targets: [

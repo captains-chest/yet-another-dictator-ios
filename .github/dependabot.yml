@@ -1,0 +1,48 @@
+# Weekly version updates, proposed as pull requests. Security updates are enabled separately in
+# the repository settings and are not limited by this schedule.
+version: 2
+updates:
+  # Package.swift / Package.resolved. WhisperKit and our shared DictationCore package
+  # (captains-chest/DictationCore) are pinned with `exact:`; Dependabot proposes a new
+  # exact pin (manifest and Package.resolved together), so nothing floats without review. Model
+  # files are not covered and must be bumped by hand.
+  - package-ecosystem: "swift"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Europe/Copenhagen"
+    # Default 3-day cooldown (GitHub's platform default) is fine for third-party packages.
+    # DictationCore must be excluded: it is our own package, pinned exact, and often has only
+    # one recent tag. When cooldown filters that sole tag, Dependabot sees an empty "latest"
+    # version and fails with illformed_requirement ["<="] (see Dependabot Updates run
+    # 38051879049 on 2026-10-10). Excluding it keeps weekly exact-pin review intact without
+    # that crash.
+    cooldown:
+      default-days: 3
+      exclude:
+        - "*DictationCore*"
+        - "*dictationcore*"
+    groups:
+      # Our own core gets its own PR, separate from third-party bumps.
+      shared-core:
+        patterns: ["*DictationCore*", "*dictationcore*"]
+      swift-packages:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Workflow actions are pinned to commit SHAs with a version comment; Dependabot updates both.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Europe/Copenhagen"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps)"
