@@ -1,0 +1,64 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "dictationcore",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/captains-chest/DictationCore.git",
+          "name" : "DictationCore"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "6d28e24d0ee518d957bb8acdf7931b0480dfa17d",
+            "version" : "0.1.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "DictationCore"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-argument-parser",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-argument-parser.git",
+          "name" : "swift-argument-parser"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+            "version" : "1.8.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-argument-parser"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "whisperkit",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/argmaxinc/WhisperKit.git",
+          "name" : "argmax-oss-swift"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "1bbc57cb7fe6410248a685b1c5a3c6d56adc2ed4",
+            "version" : "1.1.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "WhisperKit"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}
