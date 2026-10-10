@@ -47,10 +47,9 @@ These are requirements for every change:
 
 Early scaffolding: a SwiftPM package with `KeyboardTextInserter` (the `TextInserting` port on
 `UITextDocumentProxy`) and design notes. There is **no Xcode project yet**: no app target, no
-keyboard extension, no entitlements, no microphone capture, no bundled model, no tests and no CI.
+keyboard extension, no entitlements, no microphone capture, no bundled model, and only the inserter has tests.
 A keyboard extension can't record audio itself, so capture needs a decision (see
-`Sources/DictatorIOS/Notes.md`). A proposed CI workflow is in `docs/ci.yml`; move it to
-`.github/workflows/` to enable it.
+`Sources/DictatorIOS/Notes.md`). CI (`.github/workflows/ci.yml`) runs the tests and builds the package for iOS.
 
 ## Conventions
 
