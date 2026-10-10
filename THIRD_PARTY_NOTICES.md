@@ -7,11 +7,14 @@ the app's acknowledgements when the app ships.
 | Component | Used for | License | Source |
 | --- | --- | --- | --- |
 | WhisperKit 1.1.1 | On-device speech recognition | MIT, © 2024 argmax, inc. | https://github.com/argmaxinc/WhisperKit |
-| WhisperKit Core ML models | Speech model (Core ML conversion), once one is bundled | MIT (argmax, inc.) | https://huggingface.co/argmaxinc/whisperkit-coreml |
-| OpenAI Whisper weights and tokenizer | The original model (e.g. Large v3 Turbo is MIT; check the card of whichever size is chosen) | MIT, © 2022 OpenAI | https://github.com/openai/whisper |
+| WhisperKit Core ML model `openai_whisper-small_216MB` | Bundled speech model (Core ML conversion; ADR 0003) | MIT (argmax, inc.) | https://huggingface.co/argmaxinc/whisperkit-coreml |
+| OpenAI Whisper Small weights and tokenizer | The original model the conversion is made from | Apache License 2.0, © OpenAI | https://huggingface.co/openai/whisper-small |
 | DictationCore 0.1.0 | Shared dictation logic | MIT, © 2026 Nicki Skipper Otte | https://github.com/captains-chest/DictationCore |
 
 `swift-argument-parser` (Apache 2.0) is in `Package.resolved` only because WhisperKit's
 command-line tool needs it; the app doesn't link it.
 
 Each MIT component is used under the MIT license text in `LICENSE`, with its own copyright notice.
+The Whisper Small weights and tokenizer are used under the Apache License 2.0
+(https://www.apache.org/licenses/LICENSE-2.0); the full text must ship in the app's
+acknowledgements.
