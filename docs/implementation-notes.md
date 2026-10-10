@@ -1,30 +1,38 @@
-# Implementation notes for the iOS keyboard
+# Implementation notes
 
-## Keyboard extension setup (in Xcode)
+Capture, the model, and the iOS 18 minimum are decided in `docs/adr/`. This file is how that is
+wired.
 
-1. Add a Keyboard Extension target to the iOS app.
-2. In the extension's Info.plist, set `RequestsOpenAccess` if full access is required for mic (usually yes).
-3. Request microphone permission in the main app and share via App Group if needed.
+## Processes
 
-## Mic button UX
+- **Dictator** (container app) records with `MicrophoneRecorder`, transcribes with
+  `WhisperKitTranscriber`, and runs `DictationController`. `SessionHost` applies keyboard commands.
+- **DictatorKeyboard** shows the mic button and types with `KeyboardTextInserter`. It links
+  `DictatorIOS` only, so WhisperKit is not in the extension.
+- **SessionMailbox** is the App Group folder: a command queue, `host.json`, one `delivery.json`,
+  and an ack. Darwin notifications (`SessionSignal`) wake the other process. The files are the data.
 
-- Place a large mic button prominently on the keyboard view (SwiftUI hosted in UIInputViewController).
-- Gesture: UILongPressGestureRecognizer or SwiftUI gesture for hold (PTT) and tap (toggle).
-- On press: call `controller.hotkeyPressed()`.
-- On release (if held long enough): call `controller.hotkeyReleased()`.
+The keyboard decides tap versus hold (`KeyboardSession.holdThreshold`, 0.35s, the same default as
+`DictationController`). A hold or a second tap sends `finish`. The app may apply both messages in
+one turn, and the controller would otherwise see no time pass between press and release.
 
-## Audio recording
+Smart spacing runs in the keyboard, from `documentContextBeforeInput`. The app's controller leaves
+`textBeforeCursor` nil so the transcript is not adjusted twice.
 
-Implement `AudioRecording` using AVAudioEngine in the main app or carefully in the extension.
-If memory is constrained in the extension, record in the main app and communicate via App Group + Darwin notification.
+## Session
+
+"Keep dictation available" activates an `AVAudioSession` record session and leaves the engine
+running (0.4s pre-roll). That is what keeps the app awake for the keyboard. Turning it off stops
+the engine. The keyboard treats a host heartbeat older than 3 seconds as gone.
 
 ## Model
 
-Start with Whisper Small. Load via WhisperKit in the main app or extension depending on measurements.
-Reuse the same prompt, cleaning, and SmartJoin from DictationCore.
+`scripts/fetch-model.sh` fills `./Model` from `scripts/model-manifest.txt`. The app's "Copy bundled
+model" build phase copies it into the bundle when the folder exists. `WhisperKitConfig.download` is
+false, and `prepare()` throws if a required file is missing.
 
-## Next steps
+## Still to measure on a device
 
-- Create the actual Xcode project with App + Keyboard Extension targets.
-- Wire the DictationController with the keyboard inserter and a microphone recorder.
-- Design the minimal keyboard UI with the mic button.
+- Peak memory, load time, latency, and Danish/English quality of Whisper Small.
+- How long an armed session stays alive in the background, and whether the always-on microphone
+  indicator is acceptable.
