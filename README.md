@@ -1,6 +1,6 @@
 # Yet Another Dictator — iOS
 
-Native iOS companion to the [macOS Dictator app](https://github.com/captainDuckay/yet-another-dictator).
+Native iOS companion to the [macOS Dictator app](https://github.com/captains-chest/yet-another-dictator).
 
 Fully offline dictation that works in any text field via a custom keyboard extension. Uses the shared [DictationCore](https://github.com/captains-chest/DictationCore) package and WhisperKit.
 
