@@ -3,11 +3,12 @@ import Foundation
 import Synchronization
 @preconcurrency import WhisperKit
 
-/// Offline transcription using the WhisperKit model bundled inside the app.
+/// On-device transcription with Whisper Small, loaded from the folder `ModelInstaller` downloaded
+/// and verified after the user opted in (ADR 0004). Audio never leaves the device.
 ///
-/// Network access is never requested: `download` is disabled and the tokenizer is read from the
-/// model folder. Loading fails if a file is missing, which is what would otherwise make WhisperKit
-/// fetch it. Mirrors the macOS transcriber. The iOS app bundles Whisper Small (ADR 0003).
+/// WhisperKit itself never touches the network: `download` is disabled and the tokenizer is read
+/// from the model folder. Loading fails if a file is missing, which is what would otherwise make
+/// WhisperKit fetch it. Mirrors the macOS transcriber.
 public actor WhisperKitTranscriber: Transcribing {
     /// Files that must exist in the model folder before WhisperKit is allowed to load. A missing
     /// tokenizer would otherwise make WhisperKit fall back to downloading from Hugging Face.
@@ -27,7 +28,7 @@ public actor WhisperKitTranscriber: Transcribing {
 
         public var description: String {
             switch self {
-            case .missingModelFiles(let files): "Bundled model is incomplete, missing: \(files.joined(separator: ", "))"
+            case .missingModelFiles: "The speech model isn't downloaded yet. Open Dictator to download it."
             case .notLoaded: "Model is not loaded"
             }
         }
@@ -63,11 +64,6 @@ public actor WhisperKitTranscriber: Transcribing {
 
     public init(modelFolder: URL) {
         self.modelFolder = modelFolder
-    }
-
-    /// `<App>.app/Contents/Resources/Model`
-    public static func bundledModelFolder(in bundle: Bundle = .main) -> URL? {
-        bundle.resourceURL?.appending(path: "Model", directoryHint: .isDirectory)
     }
 
     public func prepare() async throws {

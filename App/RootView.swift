@@ -96,13 +96,7 @@ struct RootView: View {
 
     private var modelSection: some View {
         Section {
-            switch model.controller.state {
-            case .unavailable(let message):
-                Text(message)
-                    .foregroundStyle(.red)
-            default:
-                Text("Whisper Small is bundled on this iPhone and never downloads.")
-            }
+            ModelSection(download: model.modelDownload, state: model.controller.state)
         } header: {
             Text("Model")
         }

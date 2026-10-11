@@ -6,6 +6,10 @@ All notable changes are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- The speech model is no longer inside the app, so the app is about 220 MB smaller. The Model screen shows the size and downloads it only when you tap Download Model, over Wi-Fi unless you turn on mobile data and confirm. The download keeps going in the background, resumes after interruptions, and every file is checked against a SHA-256 list built into the app (ADR 0004, supersedes ADR 0003). Audio never leaves the device; the one-time model download is the only network use.
+- Third-party notices: OpenAI's Whisper weights are MIT licensed, not Apache 2.0.
+
 ### Fixed
 - Consecutive dictations no longer get a double smart-spacing adjustment. The container hands off
   the cleaned transcript raw (`NoPrecedingText.usesHistoryForJoining = false` on DictationCore

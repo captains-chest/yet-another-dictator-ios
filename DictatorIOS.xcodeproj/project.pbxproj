@@ -129,7 +129,7 @@
 				CC0000000000000000000001 /* Frameworks */,
 				120000000000000000000001 /* Sources */,
 				130000000000000000000001 /* Resources */,
-				150000000000000000000001 /* Copy bundled model */,
+				150000000000000000000001 /* Copy model manifest */,
 				140000000000000000000001 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -230,20 +230,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		150000000000000000000001 /* Copy bundled model */ = {
+		150000000000000000000001 /* Copy model manifest */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/scripts/model-manifest.txt",
 			);
-			name = "Copy bundled model";
+			name = "Copy model manifest";
 			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/model-manifest.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ -d \"$SRCROOT/Model\" ]; then\n  mkdir -p \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/Model\"\n  rsync -a --delete --exclude '.*' \"$SRCROOT/Model/\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/Model/\"\nfi\n";
+			shellScript = "# The model is downloaded after install (ADR 0004); only its pinned manifest ships, sealed by the signature.\ncp \"$SRCROOT/scripts/model-manifest.txt\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/model-manifest.txt\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
