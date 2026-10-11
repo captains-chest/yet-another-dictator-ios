@@ -7,11 +7,13 @@ import SwiftUI
 import UIKit
 import WhisperTranscription
 
-/// Composition root: microphone, bundled model, and the keyboard hand-off.
+/// Composition root: microphone, the downloaded model, and the keyboard hand-off.
 @MainActor
 @Observable
 final class AppModel {
     let controller: DictationController
+    /// Opt-in model download (ADR 0004).
+    let modelDownload: ModelDownload
     var language: DictationLanguage {
         didSet {
             defaults.set(language.rawValue, forKey: Self.languageKey)
@@ -39,12 +41,15 @@ final class AppModel {
     private static let retryTimeout: Duration = .seconds(120)
 
     init() {
-        let modelFolder = WhisperKitTranscriber.bundledModelFolder()
-            ?? URL(filePath: "/nonexistent", directoryHint: .isDirectory)
+        let modelDownload = ModelDownload()
+        self.modelDownload = modelDownload
+        let modelFolder = modelDownload.folder
         let recorder = MicrophoneRecorder()
         let transcriber = WhisperKitTranscriber(modelFolder: modelFolder)
         let mailbox = AppGroup.containerURL().flatMap { try? SessionMailbox(directory: $0) }
         let controller: DictationController
+    /// Opt-in model download (ADR 0004).
+    let modelDownload: ModelDownload
         let host: SessionHost?
         if let mailbox {
             let handoff = HandoffInserter(mailbox: mailbox)
@@ -89,9 +94,12 @@ final class AppModel {
         }
 
         let saved = defaults.bool(forKey: Self.sessionArmedKey)
+        modelDownload.onReady = { [weak self] in await self?.controller.loadModel() }
         Task {
             refreshMicrophone()
+            // Without the model this reports "not downloaded yet" to the app and the keyboard.
             await controller.loadModel()
+            modelDownload.resumeIfStarted()
             if saved { await setSessionArmed(true) }
         }
     }

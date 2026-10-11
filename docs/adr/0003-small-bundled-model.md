@@ -1,6 +1,6 @@
 # 3. Start with a small bundled Whisper model; never download
 
-- Status: Accepted
+- Status: Superseded by [ADR 0004](0004-download-model-after-opt-in.md) (2026-10-11); the model choice (Whisper Small) still stands
 - Date: 2026-10-10
 
 ## Context

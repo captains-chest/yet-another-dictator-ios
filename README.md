@@ -2,14 +2,14 @@
 
 Native iOS companion to the [macOS Dictator app](https://github.com/captains-chest/yet-another-dictator).
 
-Fully offline dictation that works in any text field via a custom keyboard extension. Uses the shared [DictationCore](https://github.com/captains-chest/DictationCore) package and WhisperKit.
+On-device dictation that works in any text field via a custom keyboard extension. Uses the shared [DictationCore](https://github.com/captains-chest/DictationCore) package and WhisperKit.
 
 ## Design goals
 
 - **Simple and robust** — same philosophy as the macOS app: no fancy features, just reliable dictation.
 - **Platform native** — floating-style mic button on the keyboard when a text field is focused.
 - **Hold** = push-to-talk, **tap** = toggle (same dual-mode as the macOS hotkey).
-- **Smaller model** — Whisper Small (or device-appropriate) via WhisperKit. Offline, on-device.
+- **Smaller model** — Whisper Small via WhisperKit, on-device. Downloaded once after you opt in (about 220 MB, Wi-Fi recommended).
 - **Shared core** — pure logic lives in DictationCore.
 
 ## Architecture
@@ -21,7 +21,8 @@ model (ADR 0001).
 ```
 Container app
   └─ AVAudioEngine → CaptureBuffer (16 kHz mono)
-  └─ WhisperKitTranscriber (bundled Whisper Small, download disabled)
+  └─ WhisperKitTranscriber (Whisper Small from Application Support, WhisperKit download disabled)
+  └─ ModelDownload → ModelInstaller + BackgroundTransport (opt-in, Wi-Fi by default, ADR 0004)
   └─ DictationController
   └─ HandoffInserter writes the transcript into the App Group
 Keyboard extension
@@ -45,12 +46,15 @@ microphone indicator stays visible until the session is turned off.
 Requires iOS 18+, Xcode 26 / Swift 6.2.
 
 ```sh
-scripts/fetch-model.sh          # once; verifies Whisper Small into ./Model (gitignored)
+scripts/fetch-model.sh          # optional; verifies Whisper Small into ./Model for the end-to-end test
 open DictatorIOS.xcodeproj
 ```
 
-The app copies `Model/` into its bundle when that folder exists. Without it, the app still builds
-and refuses to transcribe. `Model/` is not downloaded by WhisperKit.
+No build contains the model (ADR 0004). The app ships only `scripts/model-manifest.txt`, sealed by
+its signature and never fetched. On the Model screen the user sees the size and taps **Download
+Model**; Wi-Fi is the default, mobile data only if they turn it on and confirm. A background
+`URLSession` keeps going while the app is suspended. Files land in `Application Support/Models`
+(excluded from backup), each checked against its SHA-256 before use.
 
 ```sh
 swift test                      # hand-off, insertion, and "model folder is complete" checks
@@ -58,7 +62,7 @@ swift test                      # hand-off, insertion, and "model folder is comp
 
 ## Entitlements
 
-Each one is required for the hand-off in ADR 0001, and none of them grant network access.
+Each one is required for the hand-off in ADR 0001. The only network use is the opt-in model download in the container app (ADR 0004).
 
 - **App Group** `group.com.captainduckay.dictator.ios` on the app and the keyboard: the in-flight
   transcript. Deleted once typed.
@@ -78,8 +82,9 @@ Each one is required for the hand-off in ADR 0001, and none of them grant networ
 
 These are requirements for every change:
 
-- **Offline dictation.** Audio and text never leave the device. The model is bundled (or
-  explicitly installed by the user), and WhisperKit must never download on its own.
+- **Audio never leaves the device; the one-time model download is the only network use.** The
+  download needs the user's explicit opt-in, defaults to Wi-Fi, and is verified against the bundled
+  manifest. WhisperKit must never download on its own.
 - **No clipboard.** Text goes in through `UITextDocumentProxy.insertText`, never the pasteboard.
 - **Least privilege.** Full Access and App Groups only where strictly needed, explained in the PR.
   Nothing typed is stored or logged.
@@ -87,10 +92,10 @@ These are requirements for every change:
 ## Status
 
 The container app, the keyboard extension, and the App Group hand-off are in place. The model is
-pinned in `scripts/model-manifest.txt` and bundled by `scripts/fetch-model.sh`; it is not committed.
+pinned in `scripts/model-manifest.txt` and downloaded after install with the user's consent (ADR 0004).
 CI (`.github/workflows/ci.yml`) runs `swift test` and builds the iOS app. How the two processes are
 wired is in `docs/implementation-notes.md`. Peak memory, latency, and Danish/English quality on the
-oldest supported iPhone are still to be measured before considering a larger model (ADR 0003). How
+oldest supported iPhone are still to be measured before considering a larger model (ADR 0004 makes that a download, not an app-size question). How
 long an armed session survives in the background needs the same on-device pass (ADR 0001).
 
 ## Conventions
