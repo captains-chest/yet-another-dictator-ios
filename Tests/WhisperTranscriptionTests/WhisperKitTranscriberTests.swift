@@ -21,15 +21,10 @@ struct WhisperKitTranscriberTests {
         }
     }
 
-    /// ADR 0003: every file the transcriber refuses to fetch must be pinned in the manifest.
+    /// ADR 0004: every file the transcriber refuses to fetch must be pinned in the manifest.
     @Test func manifestCoversEveryRequiredFile() throws {
-        let manifest = try String(contentsOf: Self.repoRoot.appending(path: "scripts/model-manifest.txt"), encoding: .utf8)
-        let paths = manifest.split(separator: "\n").compactMap { line -> String? in
-            guard !line.hasPrefix("#") else { return nil }
-            let parts = line.split(separator: " ")
-            guard parts.count == 3 else { return nil }
-            return String(parts[2])
-        }
+        let text = try String(contentsOf: Self.repoRoot.appending(path: "scripts/model-manifest.txt"), encoding: .utf8)
+        let paths = try ModelManifest(text: text).files(for: "openai_whisper-small_216MB").map(\.localPath)
         for required in WhisperKitTranscriber.requiredFiles {
             #expect(
                 paths.contains { $0 == required || $0.hasPrefix(required + "/") },
