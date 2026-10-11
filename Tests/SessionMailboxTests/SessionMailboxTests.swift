@@ -404,6 +404,7 @@ private final class Pipeline {
             recorder: recorder,
             transcriber: FakeTranscriber(),
             inserter: handoff,
+            precedingText: NoPrecedingText(),
             now: { clock.time },
             stopTail: .zero,
             transcriptionTimeout: { _ in .seconds(5) },

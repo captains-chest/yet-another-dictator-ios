@@ -48,14 +48,20 @@ final class AppModel {
         let host: SessionHost?
         if let mailbox {
             let handoff = HandoffInserter(mailbox: mailbox)
-            let made = DictationController(recorder: recorder, transcriber: transcriber, inserter: handoff)
+            let made = DictationController(
+                recorder: recorder,
+                transcriber: transcriber,
+                inserter: handoff,
+                precedingText: NoPrecedingText()
+            )
             controller = made
             host = SessionHost(controller: made, inserter: handoff, mailbox: mailbox)
         } else {
             controller = DictationController(
                 recorder: recorder,
                 transcriber: transcriber,
-                inserter: UnavailableInserter()
+                inserter: UnavailableInserter(),
+                precedingText: NoPrecedingText()
             )
             host = nil
         }
@@ -65,8 +71,6 @@ final class AppModel {
         self.host = host
         language = DictationLanguage(storedValue: defaults.string(forKey: Self.languageKey))
         controller.language = language
-        // Smart spacing needs the text in front of the cursor, which only the keyboard can see.
-        controller.textBeforeCursor = { nil }
 
         let log = Self.log
         controller.onStateChange = { [weak self] state in
