@@ -48,8 +48,6 @@ final class AppModel {
         let transcriber = WhisperKitTranscriber(modelFolder: modelFolder)
         let mailbox = AppGroup.containerURL().flatMap { try? SessionMailbox(directory: $0) }
         let controller: DictationController
-    /// Opt-in model download (ADR 0004).
-    let modelDownload: ModelDownload
         let host: SessionHost?
         if let mailbox {
             let handoff = HandoffInserter(mailbox: mailbox)
