@@ -16,8 +16,8 @@ The keyboard decides tap versus hold (`KeyboardSession.holdThreshold`, 0.35s, th
 `DictationController`). A hold or a second tap sends `finish`. The app may apply both messages in
 one turn, and the controller would otherwise see no time pass between press and release.
 
-Smart spacing runs in the keyboard, from `documentContextBeforeInput`. The app's controller leaves
-`textBeforeCursor` nil so the transcript is not adjusted twice.
+Smart spacing runs in the keyboard, from `documentContextBeforeInput`. The app can't see the field,
+so its controller gets `NoPrecedingText`, a `PrecedingTextReading` port that always returns nil.
 
 ## Session
 
