@@ -17,7 +17,9 @@ The keyboard decides tap versus hold (`KeyboardSession.holdThreshold`, 0.35s, th
 one turn, and the controller would otherwise see no time pass between press and release.
 
 Smart spacing runs in the keyboard, from `documentContextBeforeInput`. The app can't see the field,
-so its controller gets `NoPrecedingText`, a `PrecedingTextReading` port that always returns nil.
+so its controller gets `NoPrecedingText`, a `PrecedingTextReading` port that always returns nil and
+opts out of the dictation-history SmartJoin fallback (`usesHistoryForJoining == false`). The
+container therefore hands off the cleaned transcript raw; only the keyboard fits it to the field.
 
 ## Session
 
