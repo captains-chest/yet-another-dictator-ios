@@ -15,7 +15,7 @@ let package = Package(
     ],
     // Every dependency is pinned exactly; Dependabot proposes bumps as PRs.
     dependencies: [
-        .package(url: "https://github.com/captains-chest/DictationCore.git", exact: "0.2.0"),
+        .package(url: "https://github.com/captains-chest/DictationCore.git", exact: "0.2.1"),
         .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "1.1.1")
     ],
     targets: [

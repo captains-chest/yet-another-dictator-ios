@@ -37,6 +37,7 @@ actor FakeTranscriber: Transcribing {
     var result = "hello world"
     func prepare() async throws {}
     func transcribe(_ samples: [Float], language: String?) async throws -> String { result }
+    func set(result: String) { self.result = result }
 }
 
 @MainActor
@@ -308,6 +309,31 @@ struct SessionHostTests {
         #expect(rig.recorder.isRecording == false)
         #expect(rig.proxy.text.isEmpty)
     }
+
+    /// P0: the container must not SmartJoin from its own history before the keyboard joins from
+    /// `documentContextBeforeInput`. A field that already ends with a space makes a double join
+    /// visible as two spaces (and wrong capitalization) on the second consecutive dictation.
+    @Test func consecutiveDictationsAreJoinedOnlyByTheKeyboard() async throws {
+        let rig = try Pipeline()
+        await rig.controller.loadModel()
+        rig.host.arm()
+        try await rig.mailbox.writeHost(HostStatus(armed: true, phase: .ready, note: nil, updatedAt: rig.clock.time))
+        await rig.keyboard.refresh()
+
+        // Mid-sentence field that already has the separating space.
+        rig.context.value = "Hello "
+        try await rig.dictate("World.")
+        #expect(rig.proxy.text == "world.")
+        #expect(rig.controller.state == .ready)
+
+        // Keep the same preceding text: if the controller had pre-joined against history
+        // ("World." → " Again."), the keyboard would keep that leading space and we'd get
+        // "world. Again." with a double space once this is pasted after "Hello ".
+        rig.context.value = "Hello "
+        try await rig.dictate("Again.")
+        #expect(rig.proxy.text == "world.again.")
+        #expect(rig.mailbox.peekDelivery() == nil)
+    }
 }
 
 @MainActor
@@ -380,19 +406,25 @@ private final class Pipeline {
     let mailbox: SessionMailbox
     let proxy: FakeProxy
     let recorder: FakeRecorder
+    let transcriber: FakeTranscriber
     let controller: DictationController
     let host: SessionHost
     let keyboard: KeyboardSession
+    let context: ContextBox
 
     init() throws {
         let clock = Clock()
+        let context = ContextBox()
         let mailbox = try makeMailbox()
         let proxy = FakeProxy()
         let recorder = FakeRecorder()
+        let transcriber = FakeTranscriber()
         self.clock = clock
+        self.context = context
         self.mailbox = mailbox
         self.proxy = proxy
         self.recorder = recorder
+        self.transcriber = transcriber
         let handoff = HandoffInserter(
             mailbox: mailbox,
             post: { _ in },
@@ -402,7 +434,7 @@ private final class Pipeline {
         )
         let controller = DictationController(
             recorder: recorder,
-            transcriber: FakeTranscriber(),
+            transcriber: transcriber,
             inserter: handoff,
             precedingText: NoPrecedingText(),
             now: { clock.time },
@@ -422,8 +454,26 @@ private final class Pipeline {
             mailbox: mailbox,
             inserter: KeyboardTextInserter(proxy: proxy),
             post: { _ in },
-            now: { clock.time }
+            now: { clock.time },
+            contextBeforeCursor: { context.value }
         )
+    }
+
+    /// Hold-to-talk one utterance and wait until the keyboard has typed it (or we time out).
+    func dictate(_ transcript: String) async throws {
+        await transcriber.set(result: transcript)
+        host.publish()
+        await keyboard.refresh()
+        keyboard.press()
+        clock.time += 1
+        keyboard.release()
+        host.drainCommands()
+        for _ in 0..<50 {
+            host.publish()
+            await keyboard.refresh()
+            if controller.state == .ready, mailbox.peekDelivery() == nil { return }
+            try await Task.sleep(for: .milliseconds(20))
+        }
     }
 }
 

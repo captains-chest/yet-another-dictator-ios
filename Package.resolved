@@ -1,13 +1,13 @@
 {
-  "originHash" : "67685c7c4f9eb7eab5ffeadecf98f0216b96c6364f25382cf95290c91ab3fcae",
+  "originHash" : "fcc705ce49ba98e173665729c87606cb785925268b7c844f6ee676a694fcef65",
   "pins" : [
     {
       "identity" : "dictationcore",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/captains-chest/DictationCore.git",
       "state" : {
-        "revision" : "793975be62dd781ac7aa2e990e360935cce685cf",
-        "version" : "0.2.0"
+        "revision" : "68c926ea7d5a84aeca8af0f8535cfd25c84d95e8",
+        "version" : "0.2.1"
       }
     },
     {
