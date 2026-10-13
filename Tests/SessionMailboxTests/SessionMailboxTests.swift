@@ -16,6 +16,9 @@ final class FakeProxy: TextDocumentProxying {
     func deleteBackward() {
         if !text.isEmpty { text.removeLast() }
     }
+    var documentContextBeforeInput: String? { text }
+    var selectedText: String? { nil }
+    let documentIdentifier = UUID()
 }
 
 @MainActor
@@ -172,6 +175,37 @@ struct KeyboardSessionTests {
         try rig.mailbox.writeDelivery(delivery)
         await rig.keyboard.refresh()
         #expect(rig.proxy.text == "Retry")
+    }
+
+    @Test func undoDeletesTheLastTranscriptUntilTheFieldChanges() async throws {
+        let rig = try Rig()
+        try await rig.becomeReady()
+        #expect(!rig.keyboard.canUndo)
+        rig.keyboard.press()
+        let startID = try #require(rig.mailbox.listCommands().first).id
+        rig.context.value = "Hello"
+        try rig.mailbox.writeDelivery(sampleDelivery(commandID: startID, text: "There.", at: rig.clock.time))
+        await rig.keyboard.refresh()
+        #expect(rig.proxy.text == " there.")
+        #expect(rig.keyboard.canUndo)
+
+        await rig.keyboard.undo()
+        #expect(rig.proxy.text.isEmpty)
+        #expect(!rig.keyboard.canUndo)
+        await rig.keyboard.refresh()
+        #expect(!rig.keyboard.canUndo)
+
+        rig.context.value = nil
+        var retry = sampleDelivery(commandID: UUID(), text: "Again", at: rig.clock.time)
+        retry.acceptsWithoutCommand = true
+        try rig.mailbox.writeDelivery(retry)
+        await rig.keyboard.refresh()
+        #expect(rig.keyboard.canUndo)
+        rig.proxy.text += "?" // the user typed after it
+        await rig.keyboard.refresh()
+        #expect(!rig.keyboard.canUndo)
+        await rig.keyboard.undo()
+        #expect(rig.proxy.text == "Again?")
     }
 
     @Test func aFailedInsertIsReported() async throws {

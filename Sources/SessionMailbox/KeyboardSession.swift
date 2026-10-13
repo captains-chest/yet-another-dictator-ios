@@ -30,6 +30,9 @@ public final class KeyboardSession {
     public private(set) var phase: KeyboardPhase = .hostUnavailable
     /// A short, user-facing problem. Never a transcript.
     public private(set) var banner: String?
+    /// Whether Undo Last Dictation is offered: the last transcript was typed completely and nothing
+    /// has changed in front of the cursor since. Updated on every `refresh()`.
+    public private(set) var canUndo = false
     public let inserter: KeyboardTextInserter
 
     private let mailbox: SessionMailbox
@@ -124,6 +127,7 @@ public final class KeyboardSession {
 
     /// Reads the host and types a waiting transcript. Call on a timer and whenever a signal arrives.
     public func refresh() async {
+        defer { updateUndo() }
         let timestamp = now()
         if !isDelivering, let delivery = mailbox.peekDelivery() {
             isDelivering = true
@@ -168,6 +172,25 @@ public final class KeyboardSession {
             clearGesture()
             phase = .unavailable(host.note ?? "Dictation is unavailable.")
         }
+    }
+
+    /// Deletes exactly what the last transcript typed (including any smart-join space), if the
+    /// field still ends with it. Purely local: the app isn't involved.
+    public func undo() async {
+        guard canUndo, !isDelivering else { return }
+        canUndo = false
+        do {
+            try await inserter.undoLastInsert()
+        } catch is CancellationError {
+            return
+        } catch {
+            banner = error.localizedDescription
+        }
+    }
+
+    private func updateUndo() {
+        // Only checked while idle; the check forgets the dictation if the field changed.
+        canUndo = phase == .ready && activeCommandID == nil && !isDelivering && inserter.checkUndo()
     }
 
     private func clearGesture() {
