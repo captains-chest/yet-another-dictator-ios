@@ -26,6 +26,10 @@ All notable changes are documented here. The format follows
   extension that types the result through the App Group hand-off (ADR 0001).
 - SHA-256 model manifest and `scripts/fetch-model.sh` for `openai_whisper-small_216MB` (ADR 0003).
 - CI workflow that runs the package tests and builds the iOS app.
+- Undo Last Dictation: after a dictation, the keyboard shows an Undo button that deletes exactly
+  what that dictation typed (including any space it added in front), like the Mac app. It's only
+  offered while the cursor is still right after the dictated text in the same field; once you type,
+  move the cursor, select text or switch fields, the dictation is no longer undoable.
 
 ### Changed
 - The speech model is no longer inside the app, so the app is about 220 MB smaller. The Model screen shows the size and downloads it only when you tap Download Model, over Wi-Fi unless you turn on mobile data and confirm. The download keeps going in the background, resumes after interruptions, and every file is checked against a SHA-256 list built into the app (ADR 0004, supersedes ADR 0003). Audio never leaves the device; the one-time model download is the only network use.

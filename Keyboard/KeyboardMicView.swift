@@ -16,6 +16,18 @@ struct KeyboardMicView: View {
                 }
                 .accessibilityLabel("Next keyboard")
                 Spacer()
+                if screen.fullAccess, let session = screen.session, session.canUndo {
+                    Button {
+                        Task { await session.undo() }
+                    } label: {
+                        Label("Undo", systemImage: "arrow.uturn.backward")
+                            .font(.body)
+                            .frame(height: 44)
+                            .padding(.horizontal, 8)
+                    }
+                    .accessibilityLabel("Undo last dictation")
+                    .accessibilityHint("Deletes the text the last dictation typed.")
+                }
             }
             .padding(.horizontal, 8)
 

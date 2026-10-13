@@ -59,6 +59,8 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillDisappear(_ animated: Bool) {
         poll?.cancel()
         poll = nil
+        // Setting the proxy also forgets the last dictation: it's not offered for undo once the
+        // keyboard goes away (the user may switch fields or keyboards and type).
         screen.session?.inserter.proxy = nil
         screen.session?.cancel()
         super.viewWillDisappear(animated)
