@@ -9,6 +9,11 @@ All notable changes are documented here. The format follows
 ### Changed
 - Dictator is English-only. The Dansk language option is removed; Whisper offers Automatic or English. Parakeet remains English only.
 
+### Fixed
+- Dictations longer than 30 seconds no longer lose words. Whisper hears 30 seconds at a time, and the audio was cut into fixed 30-second pieces: a word on a cut could be split or lost, and a last piece shorter than a second was skipped, cutting off the end. Long recordings are now cut at a pause, and no piece is too short to be transcribed.
+- Consecutive dictations no longer get a double smart-spacing adjustment. The container hands off
+  the cleaned transcript raw (`NoPrecedingText.usesHistoryForJoining = false` on DictationCore
+  0.2.1); only the keyboard joins against `documentContextBeforeInput`.
 
 ## [0.2.0] - 2026-10-15
 

@@ -141,6 +141,32 @@ public actor WhisperKitTranscriber: Transcribing {
     private static func run(
         _ engine: Engine, _ samples: [Float], language: String?, stop: StopFlag
     ) async throws -> String {
+        // Audio over 30 s is transcribed piece by piece, cut at pauses, so no word is split at a
+        // window boundary and the end isn't skipped. See `LongAudioSplitter`.
+        let pieces = LongAudioSplitter.ranges(for: samples)
+        var language = language
+        var texts: [String] = []
+        for piece in pieces {
+            try Task.checkCancellation()
+            if stop.isSet { throw CancellationError() }
+            let audio = Array(samples[piece])
+            // The recording as a whole was checked for speech; a silent piece of a long one would
+            // only give Whisper room to invent text.
+            if pieces.count > 1, !SpeechActivity.containsSpeech(audio) { continue }
+            let (text, detected) = try await transcribePiece(engine, audio, language: language, stop: stop)
+            // One dictation is one language: later pieces use the language detected in the first
+            // piece that held speech.
+            if language == nil, !text.isEmpty { language = detected }
+            // On silence Whisper may repeat the prompt instead of returning nothing.
+            if !DictationPrompt.isEcho(text) { texts.append(text) }
+        }
+        return texts.joined(separator: " ")
+    }
+
+    /// Transcribes audio of at most one 30 s window. Returns the text and the detected language.
+    private static func transcribePiece(
+        _ engine: Engine, _ samples: [Float], language: String?, stop: StopFlag
+    ) async throws -> (text: String, language: String?) {
         let options = DecodingOptions(
             verbose: false,
             task: .transcribe,
@@ -177,7 +203,6 @@ public actor WhisperKitTranscriber: Transcribing {
             .filter { $0.compressionRatio <= Self.compressionRatioThreshold }
             .map(\.text)
             .joined(separator: " ")
-        // On silence Whisper may repeat the prompt instead of returning nothing.
-        return DictationPrompt.isEcho(text) ? "" : text
+        return (text, language == nil ? results.first?.language : language)
     }
 }
