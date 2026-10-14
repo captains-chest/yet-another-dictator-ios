@@ -4,6 +4,8 @@ import Foundation
 import Observation
 import OSLog
 import SwiftUI
+import ParakeetTranscription
+import SpeechModels
 import UIKit
 import WhisperTranscription
 
@@ -12,8 +14,14 @@ import WhisperTranscription
 @Observable
 final class AppModel {
     let controller: DictationController
-    /// Opt-in model download (ADR 0004).
+    /// Opt-in download of the chosen model (ADR 0004, ADR 0005).
     let modelDownload: ModelDownload
+    /// The model the user chose; nil until they pick one in the first-launch picker.
+    private(set) var chosenModel: SpeechModel?
+    /// Shown at launch only while no model is chosen.
+    var showsModelPicker = false
+    @ObservationIgnored private let modelChoice = ModelChoice(defaults: .standard)
+    @ObservationIgnored private let engine: ActiveTranscriber
     var language: DictationLanguage {
         didSet {
             defaults.set(language.rawValue, forKey: Self.languageKey)
@@ -43,9 +51,10 @@ final class AppModel {
     init() {
         let modelDownload = ModelDownload()
         self.modelDownload = modelDownload
-        let modelFolder = modelDownload.folder
         let recorder = MicrophoneRecorder()
-        let transcriber = WhisperKitTranscriber(modelFolder: modelFolder)
+        let engine = ActiveTranscriber()
+        self.engine = engine
+        let transcriber = engine
         let mailbox = AppGroup.containerURL().flatMap { try? SessionMailbox(directory: $0) }
         let controller: DictationController
         let host: SessionHost?
@@ -95,11 +104,40 @@ final class AppModel {
         modelDownload.onReady = { [weak self] in await self?.controller.loadModel() }
         Task {
             refreshMicrophone()
+            // Nothing downloads here: with no choice the picker is shown, otherwise the chosen
+            // model is used if it's on disk and waits for the user's Download tap if not.
+            switch ModelStartup.decide(choice: modelChoice.selected, installed: modelDownload.installedModels) {
+            case .showPicker:
+                showsModelPicker = true
+            case .use(let model):
+                if modelChoice.selected == nil { modelChoice.choose(model) }
+                await use(model)
+            }
             // Without the model this reports "not downloaded yet" to the app and the keyboard.
             await controller.loadModel()
             modelDownload.resumeIfStarted()
             if saved { await setSessionArmed(true) }
         }
+    }
+
+    /// Persists the choice and switches to that model. Downloading it still needs the user's tap.
+    func chooseModel(_ model: SpeechModel) async {
+        guard !modelDownload.isBusy else { return }
+        modelChoice.choose(model)
+        showsModelPicker = false
+        await use(model)
+        await controller.loadModel()
+    }
+
+    private func use(_ model: SpeechModel) async {
+        chosenModel = model
+        modelDownload.select(model)
+        let folder = modelDownload.folder
+        let transcriber: any Transcribing = switch model {
+        case .parakeetV2: ParakeetTranscriber(modelFolder: folder)
+        case .whisperSmall: WhisperKitTranscriber(modelFolder: folder)
+        }
+        await engine.use(transcriber)
     }
 
     func refreshMicrophone() {

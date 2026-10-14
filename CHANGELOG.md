@@ -6,6 +6,10 @@ All notable changes are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- A second speech model: NVIDIA Parakeet TDT 0.6B v2, English only, the most accurate (about 464 MB). Whisper Small stays available, and is the one to use for Dansk.
+- On first launch Dictator asks which model to use, best first, with the size, accuracy and speed of each. It downloads nothing until you choose and confirm, and only the model you chose, still over Wi-Fi unless you allow mobile data. A Whisper Small download from before stays in use without asking. Switch models or delete one you no longer use on the Models list.
+
 ### Changed
 - The speech model is no longer inside the app, so the app is about 220 MB smaller. The Model screen shows the size and downloads it only when you tap Download Model, over Wi-Fi unless you turn on mobile data and confirm. The download keeps going in the background, resumes after interruptions, and every file is checked against a SHA-256 list built into the app (ADR 0004, supersedes ADR 0003). Audio never leaves the device; the one-time model download is the only network use.
 - Third-party notices: OpenAI's Whisper weights are MIT licensed, not Apache 2.0.
