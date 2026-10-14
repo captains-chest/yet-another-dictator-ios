@@ -9,7 +9,7 @@ On-device dictation that works in any text field via a custom keyboard extension
 - **Simple and robust** — same philosophy as the macOS app: no fancy features, just reliable dictation.
 - **Platform native** — floating-style mic button on the keyboard when a text field is focused.
 - **Hold** = push-to-talk, **tap** = toggle (same dual-mode as the macOS hotkey).
-- **Smaller model** — Whisper Small via WhisperKit, on-device. Downloaded once after you opt in (about 220 MB, Wi-Fi recommended).
+- **Your choice of model** — NVIDIA Parakeet TDT 0.6B v2 (English, most accurate, about 464 MB, via FluidAudio) or Whisper Small (Dansk/English, about 220 MB, via WhisperKit), on-device. Picked on first launch; only the chosen one is downloaded, after you opt in (Wi-Fi recommended).
 - **Shared core** — pure logic lives in DictationCore.
 
 ## Architecture
@@ -21,7 +21,8 @@ model (ADR 0001).
 ```
 Container app
   └─ AVAudioEngine → CaptureBuffer (16 kHz mono)
-  └─ WhisperKitTranscriber (Whisper Small from Application Support, WhisperKit download disabled)
+  └─ ActiveTranscriber → ParakeetTranscriber (FluidAudio, loadLocal only) or WhisperKitTranscriber
+     (Whisper Small, WhisperKit download disabled), for the model chosen in the picker (ADR 0005)
   └─ ModelDownload → ModelInstaller + BackgroundTransport (opt-in, Wi-Fi by default, ADR 0004)
   └─ DictationController
   └─ HandoffInserter writes the transcript into the App Group
@@ -50,9 +51,9 @@ scripts/fetch-model.sh          # optional; verifies Whisper Small into ./Model 
 open DictatorIOS.xcodeproj
 ```
 
-No build contains the model (ADR 0004). The app ships only `scripts/model-manifest.txt`, sealed by
-its signature and never fetched. On the Model screen the user sees the size and taps **Download
-Model**; Wi-Fi is the default, mobile data only if they turn it on and confirm. A background
+No build contains a model (ADR 0004). The app ships only `scripts/model-manifest.txt`, sealed by
+its signature and never fetched. On first launch the user picks a model (best first, ADR 0005);
+then on the Model screen they see its size and tap **Download Model**; Wi-Fi is the default, mobile data only if they turn it on and confirm. A background
 `URLSession` keeps going while the app is suspended. Files land in `Application Support/Models`
 (excluded from backup), each checked against its SHA-256 before use.
 
@@ -75,16 +76,16 @@ Each one is required for the hand-off in ADR 0001. The only network use is the o
 ## Requirements
 
 - iOS 18 or later (DictationCore 0.1.0 needs it), Xcode 26 / Swift 6.2.
-- Dependencies are pinned exactly in `Package.swift` (DictationCore 0.1.0, WhisperKit 1.1.1), and
+- Dependencies are pinned exactly in `Package.swift` (DictationCore, WhisperKit 1.1.1, FluidAudio 0.17.7 with its NemoTextProcessing binary trait off), and
   `Package.resolved` is committed. Bump them deliberately; Dependabot proposes bumps as PRs.
 
 ## Privacy rules (same as the macOS app)
 
 These are requirements for every change:
 
-- **Audio never leaves the device; the one-time model download is the only network use.** The
+- **Audio never leaves the device; downloading the chosen model is the only network use.** The
   download needs the user's explicit opt-in, defaults to Wi-Fi, and is verified against the bundled
-  manifest. WhisperKit must never download on its own.
+  manifest. WhisperKit and FluidAudio must never download on their own.
 - **No clipboard.** Text goes in through `UITextDocumentProxy.insertText`, never the pasteboard.
 - **Least privilege.** Full Access and App Groups only where strictly needed, explained in the PR.
   Nothing typed is stored or logged.
@@ -107,3 +108,11 @@ dependency pins, small PRs merged on green CI. These are the same conventions as
 
 MIT © 2026 CaptainDuckay. See [LICENSE](LICENSE). Third-party components are credited in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Model attribution
+
+The Parakeet model is "parakeet-tdt-0.6b-v2" by NVIDIA Corporation, licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+([source](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2)), used as converted to Core ML by
+[FluidInference](https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v2-coreml). See
+`THIRD_PARTY_NOTICES.md`.

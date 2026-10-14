@@ -1,6 +1,6 @@
 # 4. Download the model after an explicit opt-in
 
-- Status: Accepted
+- Status: Accepted; amended by [ADR 0005](0005-choose-the-speech-model.md) (which model, chosen by the user)
 - Date: 2026-10-11
 - Supersedes: [ADR 0003](0003-small-bundled-model.md) (bundling only; Whisper Small stays the model)
 

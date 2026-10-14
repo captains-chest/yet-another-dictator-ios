@@ -1,4 +1,5 @@
 import DictationCore
+import SpeechModels
 import SwiftUI
 
 struct RootView: View {
@@ -18,6 +19,11 @@ struct RootView: View {
             }
             .navigationTitle("Dictator")
             .onAppear { model.refreshMicrophone() }
+            .sheet(isPresented: $model.showsModelPicker) {
+                ModelPickerSheet(download: model.modelDownload) { choice in
+                    Task { await model.chooseModel(choice) }
+                }
+            }
         }
     }
 
@@ -78,6 +84,12 @@ struct RootView: View {
                     Text(language.displayName).tag(language)
                 }
             }
+            .disabled(model.chosenModel?.isEnglishOnly == true)
+            if model.chosenModel?.isEnglishOnly == true {
+                Text("Parakeet understands English only. Choose Whisper Small for Dansk.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         } header: {
             Text("Language")
         }
@@ -94,11 +106,18 @@ struct RootView: View {
         }
     }
 
-    private var modelSection: some View {
+    @ViewBuilder private var modelSection: some View {
         Section {
-            ModelSection(download: model.modelDownload, state: model.controller.state)
+            ModelSection(download: model.modelDownload, state: model.controller.state, chosen: model.chosenModel)
         } header: {
             Text("Model")
+        }
+        Section {
+            ModelList(download: model.modelDownload, chosen: model.chosenModel) { choice in
+                Task { await model.chooseModel(choice) }
+            }
+        } header: {
+            Text("Models")
         }
     }
 
