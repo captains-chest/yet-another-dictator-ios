@@ -35,6 +35,6 @@ false, and `prepare()` throws if a required file is missing.
 
 ## Still to measure on a device
 
-- Peak memory, load time, latency, and Danish/English quality of Whisper Small.
+- Peak memory, load time, latency, and English quality of Whisper Small.
 - How long an armed session stays alive in the background, and whether the always-on microphone
   indicator is acceptable.

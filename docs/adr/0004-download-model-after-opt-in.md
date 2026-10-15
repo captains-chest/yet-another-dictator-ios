@@ -1,6 +1,7 @@
 # 4. Download the model after an explicit opt-in
 
 - Status: Accepted; amended by [ADR 0005](0005-choose-the-speech-model.md) (which model, chosen by the user)
+- Note (2026-10-15): Dictator is English-only; Dansk is no longer offered.
 - Date: 2026-10-11
 - Supersedes: [ADR 0003](0003-small-bundled-model.md) (bundling only; Whisper Small stays the model)
 

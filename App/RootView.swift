@@ -86,7 +86,7 @@ struct RootView: View {
             }
             .disabled(model.chosenModel?.isEnglishOnly == true)
             if model.chosenModel?.isEnglishOnly == true {
-                Text("Parakeet understands English only. Choose Whisper Small for Dansk.")
+                Text("Parakeet understands English only. Switch to Whisper Small to choose Automatic or English.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

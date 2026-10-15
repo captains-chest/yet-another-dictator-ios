@@ -2,7 +2,7 @@
 # app and is the only trust anchor: every file is pinned to an immutable Hugging Face commit and
 # verified by SHA-256 before use. The manifest itself is never fetched from the network.
 # Format: <model-id>  <sha256>  <bytes>  <huggingface-path>  <local-path-under-the-model-folder>
-# More models (e.g. a Dansk-only one) are added as extra lines with their own model-id.
+# More models are added as extra lines with their own model-id.
 # scripts/fetch-model.sh fetches the first model listed by default (Whisper Small).
 openai_whisper-small_216MB  0c33d98d0f2046b711d75041260eb53fd0ca1c3226930a779fe9082bc4763449  243  argmaxinc/whisperkit-coreml/resolve/0f63a7800b00dd0226abd051b906c246e1907482/openai_whisper-small_216MB/AudioEncoder.mlmodelc/analytics/coremldata.bin  AudioEncoder.mlmodelc/analytics/coremldata.bin
 openai_whisper-small_216MB  bb991927256c8b71c8f5df3eb652bd0d67d933d7c36da4e53a5eb15a0a635ca1  347  argmaxinc/whisperkit-coreml/resolve/0f63a7800b00dd0226abd051b906c246e1907482/openai_whisper-small_216MB/AudioEncoder.mlmodelc/coremldata.bin  AudioEncoder.mlmodelc/coremldata.bin

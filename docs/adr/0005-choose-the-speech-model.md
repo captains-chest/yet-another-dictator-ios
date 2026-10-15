@@ -1,6 +1,7 @@
 # 5. Let the user choose the speech model; download only that one
 
 - Status: Accepted
+- Note (2026-10-15): Dictator is English-only; Dansk is no longer offered.
 - Date: 2026-10-14
 - Supersedes: the "Whisper Small stays the model" part of [ADR 0003](0003-small-bundled-model.md)
   and [ADR 0004](0004-download-model-after-opt-in.md). ADR 0004's opt-in, Wi-Fi default,
@@ -10,7 +11,7 @@
 
 Whisper Small is the weakest of the candidates measured on 14 Oct 2026 (Open ASR Leaderboard).
 NVIDIA Parakeet TDT 0.6B v2 is much more accurate for English (6.05 average WER), runs on the
-Neural Engine, and has no 30-second window. It is English only, so Whisper Small stays for Dansk.
+Neural Engine, and has no 30-second window. It is English only, so Whisper Small stays for Automatic or English.
 The macOS and Android apps get the same choice.
 
 ## Decision

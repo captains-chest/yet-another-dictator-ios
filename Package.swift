@@ -17,7 +17,7 @@ let package = Package(
     ],
     // Every dependency is pinned exactly; Dependabot proposes bumps as PRs.
     dependencies: [
-        .package(url: "https://github.com/captains-chest/DictationCore.git", exact: "0.2.1"),
+        .package(url: "https://github.com/captains-chest/DictationCore.git", branch: "english-only"), // TODO: exact "0.3.0" after Core is tagged
         .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "1.1.1"),
         // Parakeet TDT (Core ML). The NemoTextProcessing trait (a prebuilt text-normalisation binary
         // we don't use) is off, so only FluidAudio's own source is linked.

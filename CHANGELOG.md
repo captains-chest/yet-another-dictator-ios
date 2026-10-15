@@ -6,6 +6,10 @@ All notable changes are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Dictator is English-only. The Dansk language option is removed; Whisper offers Automatic or English. Parakeet remains English only.
+
+
 ## [0.2.0] - 2026-10-15
 
 ### Added

@@ -1,6 +1,7 @@
 # 3. Start with a small bundled Whisper model; never download
 
 - Status: Superseded by [ADR 0004](0004-download-model-after-opt-in.md) (2026-10-11); the model choice (Whisper Small) still stands
+- Note (2026-10-15): Dictator is English-only; Dansk is no longer offered.
 - Date: 2026-10-10
 
 ## Context

@@ -9,7 +9,7 @@ On-device dictation that works in any text field via a custom keyboard extension
 - **Simple and robust** — same philosophy as the macOS app: no fancy features, just reliable dictation.
 - **Platform native** — floating-style mic button on the keyboard when a text field is focused.
 - **Hold** = push-to-talk, **tap** = toggle (same dual-mode as the macOS hotkey).
-- **Your choice of model** — NVIDIA Parakeet TDT 0.6B v2 (English, most accurate, about 464 MB, via FluidAudio) or Whisper Small (Dansk/English, about 220 MB, via WhisperKit), on-device. Picked on first launch; only the chosen one is downloaded, after you opt in (Wi-Fi recommended).
+- **Your choice of model** — NVIDIA Parakeet TDT 0.6B v2 (English, most accurate, about 464 MB, via FluidAudio) or Whisper Small (Automatic or English, about 220 MB, via WhisperKit), on-device. Picked on first launch; only the chosen one is downloaded, after you opt in (Wi-Fi recommended).
 - **Shared core** — pure logic lives in DictationCore.
 
 ## Architecture
@@ -95,7 +95,7 @@ These are requirements for every change:
 The container app, the keyboard extension, and the App Group hand-off are in place. The model is
 pinned in `scripts/model-manifest.txt` and downloaded after install with the user's consent (ADR 0004).
 CI (`.github/workflows/ci.yml`) runs `swift test` and builds the iOS app. How the two processes are
-wired is in `docs/implementation-notes.md`. Peak memory, latency, and Danish/English quality on the
+wired is in `docs/implementation-notes.md`. Peak memory, latency, and English quality on the
 oldest supported iPhone are still to be measured before considering a larger model (ADR 0004 makes that a download, not an app-size question). How
 long an armed session survives in the background needs the same on-device pass (ADR 0001).
 
