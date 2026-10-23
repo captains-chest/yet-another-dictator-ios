@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Note (2026-10-15): Dictator is English-only; Dansk is no longer offered.
+- Note (2026-10-23): a third model, **Phonon-2**, is added. See "Amendment (2026-10-23)" below.
 - Date: 2026-10-14
 - Supersedes: the "Whisper Small stays the model" part of [ADR 0003](0003-small-bundled-model.md)
   and [ADR 0004](0004-download-model-after-opt-in.md). ADR 0004's opt-in, Wi-Fi default,
@@ -39,3 +40,32 @@ The macOS and Android apps get the same choice.
 - Parakeet is a larger download than Whisper Small and needs more memory while loading (about
   0.5-0.8 GB, container app only). Measure on the oldest supported iPhone.
 - One more pinned dependency (FluidAudio, Apache 2.0, no transitive dependencies with the trait off).
+
+## Amendment (2026-10-23): Phonon-2 as a third model
+
+**Context.** Phonon-2 (Fermion Research, `FermionResearch/Phonon-2`, CC-BY-4.0) is an English-only
+quantization-aware re-training of NVIDIA Parakeet TDT 0.6B v3. FluidAudio 0.17.7, already pinned,
+loads its Core ML conversion as `AsrModelVersion.phonon2` (iOS 18, which is our minimum). The
+download is about 358 MB against 464 MB for Parakeet v2. Its maker reports a 5.21% average English
+WER over the seven Open ASR Leaderboard sets, against 6.05% on the official leaderboard for
+Parakeet v2, but those are different runs.
+
+**Decision.**
+- Add `phonon-2` as a third entry, ranked **between Parakeet v2 and Whisper Small**. Parakeet v2
+  stays first because its accuracy is independently measured. Re-rank only after an A/B on real
+  dictations on an iPhone.
+- Pin `FluidInference/phonon-2-coreml@a812a0dfef205660787ef6234317ab79acf4d5d6`: 18 files with
+  SHA-256 and size in `model-manifest.txt`, downloaded with the same opt-in, Wi-Fi default and
+  verification as the other models (ADR 0004). That revision holds the single-shape default encoder.
+  The later "encoder ladder" revision needs a FluidAudio release we don't have; move the pin only
+  together with a FluidAudio bump.
+- No new transcriber: `ParakeetTranscriber(modelFolder:variant: .phonon2)` loads it. Its required
+  files differ from Parakeet v2 only in the v3 joint (`JointDecisionv3.mlmodelc`).
+
+**Memory.** Like every model, Phonon-2 is loaded and run **only in the container app**. The
+keyboard extension never loads a model, so its tens-of-MB budget (ADR 0001) is unaffected. In the
+container app Phonon-2's weights are smaller than Parakeet v2's (about 358 MB against 464 MB on
+disk, the encoder 320 MB against 445 MB), so loading should need the same or less than the
+0.5-0.8 GB noted above. The first load after download takes about a minute while the Neural Engine
+compiles the sparse encoder; iOS caches the result, but it may redo this after an OS update.
+Measure peak memory and first-load time on the oldest supported iPhone before re-ranking.
