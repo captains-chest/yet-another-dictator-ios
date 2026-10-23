@@ -9,7 +9,7 @@ On-device dictation that works in any text field via a custom keyboard extension
 - **Simple and robust** — same philosophy as the macOS app: no fancy features, just reliable dictation.
 - **Platform native** — floating-style mic button on the keyboard when a text field is focused.
 - **Hold** = push-to-talk, **tap** = toggle (same dual-mode as the macOS hotkey).
-- **Your choice of model** — NVIDIA Parakeet TDT 0.6B v2 (English, most accurate, about 464 MB, via FluidAudio) or Whisper Small (Automatic or English, about 220 MB, via WhisperKit), on-device. Picked on first launch; only the chosen one is downloaded, after you opt in (Wi-Fi recommended).
+- **Your choice of model** — NVIDIA Parakeet TDT 0.6B v2 (English, most accurate, about 464 MB, via FluidAudio), Phonon-2 (English, a smaller Parakeet, about 358 MB, via FluidAudio) or Whisper Small (Automatic or English, about 220 MB, via WhisperKit), on-device. Picked on first launch; only the chosen one is downloaded, after you opt in (Wi-Fi recommended).
 - **Shared core** — pure logic lives in DictationCore.
 
 ## Architecture
@@ -21,7 +21,7 @@ model (ADR 0001).
 ```
 Container app
   └─ AVAudioEngine → CaptureBuffer (16 kHz mono)
-  └─ ActiveTranscriber → ParakeetTranscriber (FluidAudio, loadLocal only) or WhisperKitTranscriber
+  └─ ActiveTranscriber → ParakeetTranscriber (Parakeet v2 or Phonon-2; FluidAudio, loadLocal only) or WhisperKitTranscriber
      (Whisper Small, WhisperKit download disabled), for the model chosen in the picker (ADR 0005)
   └─ ModelDownload → ModelInstaller + BackgroundTransport (opt-in, Wi-Fi by default, ADR 0004)
   └─ DictationController
@@ -116,3 +116,9 @@ The Parakeet model is "parakeet-tdt-0.6b-v2" by NVIDIA Corporation, licensed und
 ([source](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2)), used as converted to Core ML by
 [FluidInference](https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v2-coreml). See
 `THIRD_PARTY_NOTICES.md`.
+
+The Phonon-2 model is "Phonon-2" by Fermion Research, licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+([source](https://huggingface.co/FermionResearch/Phonon-2)), derived from NVIDIA's
+[parakeet-tdt-0.6b-v3](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) (CC BY 4.0), used as
+converted to Core ML by [FluidInference](https://huggingface.co/FluidInference/phonon-2-coreml).

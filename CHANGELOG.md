@@ -6,6 +6,9 @@ All notable changes are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- A third speech model for English: Phonon-2 by Fermion Research (about 358 MB), a smaller re-training of NVIDIA Parakeet. Choose it in the model picker; it downloads only when you pick it and opt in. Parakeet stays the recommended model until Phonon-2 proves better on real dictations. Like every model, it runs in the Dictator app, never in the keyboard. Phonon-2 is licensed CC-BY-4.0; the credit is in the license notices.
+
 ### Changed
 - Dictator is English-only. The Dansk language option is removed; Whisper offers Automatic or English. Parakeet remains English only.
 
