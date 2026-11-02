@@ -21,7 +21,7 @@ let package = Package(
         .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "1.1.1"),
         // Parakeet TDT (Core ML). The NemoTextProcessing trait (a prebuilt text-normalisation binary
         // we don't use) is off, so only FluidAudio's own source is linked.
-        .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.17.7", traits: [])
+        .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.18.0", traits: [])
     ],
     targets: [
         // Typing into the host app's field through the keyboard's text document proxy. Depends only
