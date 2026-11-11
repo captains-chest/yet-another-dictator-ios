@@ -14,8 +14,39 @@ struct SpeechModelsTests {
         return try ModelManifest(text: String(contentsOf: url, encoding: .utf8))
     }
 
-    @Test func rankingPutsParakeetFirstThenWhisper() {
-        #expect(SpeechModel.ranked == [.parakeetV2, .whisperSmall])
+    @Test func rankingPutsParakeetFirstThenPhonon2ThenWhisper() {
+        #expect(SpeechModel.ranked == [.parakeetV2, .phonon2, .whisperSmall])
+    }
+
+    @Test func phonon2IsEnglishOnlyAndCredited() {
+        #expect(SpeechModel.phonon2.rawValue == "phonon-2")
+        #expect(SpeechModel.phonon2.isEnglishOnly)
+        #expect(SpeechModel.parakeetV2.isEnglishOnly)
+        #expect(!SpeechModel.whisperSmall.isEnglishOnly)
+        #expect(SpeechModel.phonon2.source.contains("CC-BY-4.0"))
+    }
+
+    @Test func everyPhonon2FileIsPinnedToOneImmutableRevision() throws {
+        let revision = "a812a0dfef205660787ef6234317ab79acf4d5d6"
+        let files = try Self.manifest().files(for: SpeechModel.phonon2.rawValue)
+        #expect(files.count == 18)
+        for file in files {
+            #expect(file.remotePath == "FluidInference/phonon-2-coreml/resolve/\(revision)/\(file.localPath)")
+        }
+    }
+
+    @Test func phonon2ManifestHoldsWhatFluidAudioLoads() throws {
+        let manifest = try Self.manifest()
+        let local = manifest.files(for: SpeechModel.phonon2.rawValue).map(\.localPath)
+        for component in ["Preprocessor", "Encoder", "Decoder", "JointDecisionv3"] {
+            for part in ["coremldata.bin", "model.mil", "weights/weight.bin"] {
+                #expect(local.contains("\(component).mlmodelc/\(part)"), "missing \(component).mlmodelc/\(part)")
+            }
+        }
+        #expect(local.contains("parakeet_vocab.json"))
+        #expect(!local.contains { $0.hasPrefix("JointDecision.mlmodelc/") })
+        #expect(manifest.totalBytes(for: SpeechModel.phonon2.rawValue) == 357_573_278)
+        #expect(manifest.totalBytes(for: SpeechModel.phonon2.rawValue) < manifest.totalBytes(for: SpeechModel.parakeetV2.rawValue))
     }
 
     @Test func everyModelIsPinnedInTheManifest() throws {

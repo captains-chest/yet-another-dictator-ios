@@ -30,7 +30,7 @@ struct ModelManifestTests {
         let url = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appending(path: "scripts/model-manifest.txt")
         let manifest = try ModelManifest(text: String(contentsOf: url, encoding: .utf8))
-        #expect(manifest.modelIDs == ["openai_whisper-small_216MB", "parakeet-tdt-0.6b-v2"])
+        #expect(manifest.modelIDs == ["openai_whisper-small_216MB", "parakeet-tdt-0.6b-v2", "phonon-2"])
         #expect(manifest.files(for: "openai_whisper-small_216MB").contains { $0.localPath == "tokenizer.json" })
         #expect(manifest.files(for: "parakeet-tdt-0.6b-v2").contains { $0.localPath == "parakeet_vocab.json" })
     }

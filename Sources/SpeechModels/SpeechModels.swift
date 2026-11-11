@@ -5,7 +5,11 @@ import Foundation
 /// one (ADR 0005). Each raw value is the model-id in `model-manifest.txt`.
 public enum SpeechModel: String, CaseIterable, Identifiable, Sendable {
     // Declaration order is the ranking shown in the picker: best first.
+    // Parakeet v2 stays first: its accuracy is measured on the official Open ASR Leaderboard.
+    // Phonon-2 is smaller and newer, but its better average comes from its maker's own run, so it
+    // ranks second until it beats Parakeet on our own dictations (ADR 0005, 2026-10-23 note).
     case parakeetV2 = "parakeet-tdt-0.6b-v2"
+    case phonon2 = "phonon-2"
     case whisperSmall = "openai_whisper-small_216MB"
 
     public var id: String { rawValue }
@@ -16,6 +20,7 @@ public enum SpeechModel: String, CaseIterable, Identifiable, Sendable {
     public var displayName: String {
         switch self {
         case .parakeetV2: "NVIDIA Parakeet TDT 0.6B v2"
+        case .phonon2: "Phonon-2"
         case .whisperSmall: "Whisper Small"
         }
     }
@@ -23,6 +28,7 @@ public enum SpeechModel: String, CaseIterable, Identifiable, Sendable {
     public var accuracyNote: String {
         switch self {
         case .parakeetV2: "Most accurate for English (6.1% average word error rate on the Open ASR Leaderboard)."
+        case .phonon2: "Smaller Parakeet for English. Its maker reports 5.2% average word error rate (not an official leaderboard result)."
         case .whisperSmall: "Less accurate than Parakeet; smaller download."
         }
     }
@@ -30,17 +36,19 @@ public enum SpeechModel: String, CaseIterable, Identifiable, Sendable {
     public var speedNote: String {
         switch self {
         case .parakeetV2: "Fast: runs on the Neural Engine. Uses more memory while loading."
+        case .phonon2: "Fast: runs on the Neural Engine. The first load takes about a minute while iOS prepares it."
         case .whisperSmall: "Slower on long dictations; light on memory."
         }
     }
 
-    public var isEnglishOnly: Bool { self == .parakeetV2 }
+    public var isEnglishOnly: Bool { self != .whisperSmall }
 
     public var languageNote: String { isEnglishOnly ? "English only" : "Automatic or English" }
 
     public var source: String {
         switch self {
         case .parakeetV2: "NVIDIA, CC-BY-4.0"
+        case .phonon2: "Fermion Research, from NVIDIA Parakeet, CC-BY-4.0"
         case .whisperSmall: "OpenAI, MIT"
         }
     }
