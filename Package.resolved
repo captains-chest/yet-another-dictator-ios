@@ -1,5 +1,5 @@
 {
-  "originHash" : "e89641ddd73c7054d2dd625ff0298efe85a44f813d6a09ce2e8ad4421659163a",
+  "originHash" : "93d9563c44f966d3352072885595fda9b8b8d36aa460767e3f2980460d17258b",
   "pins" : [
     {
       "identity" : "dictationcore",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidInference/FluidAudio.git",
       "state" : {
-        "revision" : "c8b41f98eae668794dd0083bbe028fe7e6585051",
-        "version" : "0.18.3"
+        "revision" : "e0c6103bc87a88d25276cad491c86e757f58c865",
+        "version" : "0.18.4"
       }
     },
     {
