@@ -135,6 +135,7 @@ final class AppModel {
         let folder = modelDownload.folder
         let transcriber: any Transcribing = switch model {
         case .parakeetV2: ParakeetTranscriber(modelFolder: folder)
+        case .phonon2: ParakeetTranscriber(modelFolder: folder, variant: .phonon2)
         case .whisperSmall: WhisperKitTranscriber(modelFolder: folder)
         }
         await engine.use(transcriber)
